@@ -88,4 +88,5 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Radix UI](https://www.radix-ui.com/) 
+- [Radix UI](https://www.radix-ui.com/)
+- [YouTube Data API v3](https://developers.google.com/youtube/v3/docs/search/list?hl=es-419) - Documentación oficial de la API 
