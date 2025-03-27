@@ -49,7 +49,7 @@ yarn install
    - Ve a "Credenciales" y crea una nueva API Key
    - Restringe la API Key para mayor seguridad (opcional pero recomendado)
 
-   b. Crea un archivo `.env.local` en la raíz del proyecto:
+   b. Crea un archivo `.env` en la raíz del proyecto:
    ```env
    YOUTUBE_API_KEY=tu_api_key_aqui
    ```
