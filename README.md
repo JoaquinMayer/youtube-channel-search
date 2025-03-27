@@ -55,6 +55,9 @@ yarn install
    ```
 
    > ⚠️ **Nota**: La API Key de YouTube tiene cuotas de uso diarias. Para desarrollo, la cuota gratuita debería ser suficiente.
+   > Puedes consultar los límites de cuota y el uso actual en la [Consola de Google Cloud](https://console.cloud.google.com/apis/dashboard).
+   > La cuota gratuita incluye 10,000 unidades por día, donde cada operación consume un número diferente de unidades.
+   > Por ejemplo, una búsqueda de canales consume 100 unidades.
 
 4. Inicia el servidor de desarrollo:
 ```bash
