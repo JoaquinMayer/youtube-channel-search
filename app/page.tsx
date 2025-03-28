@@ -217,6 +217,10 @@ export default function ChannelSearch() {
   const [keywordSource, setKeywordSource] = useState<"search" | "related">("search")
   const [keywordError, setKeywordError] = useState<string | null>(null)
 
+  // Añadir refs para evitar guardar la misma búsqueda múltiples veces
+  const lastSavedSearchRef = useRef<string | null>(null)
+  const lastSavedRelatedSearchRef = useRef<string | null>(null)
+
   // Cargar canales visitados y búsquedas guardadas desde localStorage al iniciar
   useEffect(() => {
     const loadFromLocalStorage = () => {
@@ -250,11 +254,70 @@ export default function ChannelSearch() {
     isFirstLoad.current = false
   }, [])
 
+  // Modificar el efecto para guardar búsquedas normales
+  useEffect(() => {
+    // No guardar si es la primera carga o si no hay canales o keyword
+    if (isFirstLoad.current || channels.length === 0 || !keyword) return
 
-  // Añadir un nuevo useEffect para guardar búsquedas relacionadas
+    // Crear un identificador único para esta búsqueda
+    const searchIdentifier = `${keyword}_${channels.length}_${Date.now()}`
+
+    // Evitar guardar la misma búsqueda múltiples veces
+    if (lastSavedSearchRef.current === searchIdentifier) return
+
+    const saveCurrentSearch = () => {
+      try {
+        // Crear un ID único para esta búsqueda
+        const searchId = `search_${Date.now()}`
+
+        // Crear objeto de búsqueda
+        const searchToSave: SavedSearch = {
+          id: searchId,
+          timestamp: Date.now(),
+          params: {
+            keyword,
+            regionCode,
+            order,
+            relevanceLanguage,
+            includeLastVideoDate,
+            maxResults,
+          },
+          channels,
+          totalResults,
+        }
+
+        // Actualizar el estado de búsquedas guardadas usando el patrón funcional
+        setSavedSearches(prevSearches => {
+          const updatedSearches = [searchToSave, ...prevSearches]
+          const limitedSearches = updatedSearches.slice(0, MAX_SAVED_SEARCHES)
+          
+          // Guardar en localStorage
+          localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(limitedSearches))
+          
+          return limitedSearches
+        })
+
+        // Actualizar el ref con el identificador actual
+        lastSavedSearchRef.current = searchIdentifier
+        setCurrentSearchId(searchId)
+      } catch (error) {
+        console.error("Error al guardar búsqueda:", error)
+      }
+    }
+
+    saveCurrentSearch()
+  }, [channels, keyword, regionCode, order, relevanceLanguage, includeLastVideoDate, maxResults, totalResults])
+
+  // Modificar el efecto para guardar búsquedas relacionadas
   useEffect(() => {
     // No guardar si es la primera carga o si no hay canales o canal original
     if (isFirstLoad.current || relatedChannels.length === 0 || !originalChannel || !channelUrl) return
+
+    // Crear un identificador único para esta búsqueda
+    const searchIdentifier = `${channelUrl}_${relatedChannels.length}_${Date.now()}`
+
+    // Evitar guardar la misma búsqueda múltiples veces
+    if (lastSavedRelatedSearchRef.current === searchIdentifier) return
 
     const saveCurrentRelatedSearch = () => {
       try {
@@ -270,17 +333,19 @@ export default function ChannelSearch() {
           channels: relatedChannels,
         }
 
-        // Actualizar el estado de búsquedas guardadas
-        const updatedSearches = [searchToSave, ...savedRelatedSearches]
+        // Actualizar el estado de búsquedas guardadas usando el patrón funcional
+        setSavedRelatedSearches(prevSearches => {
+          const updatedSearches = [searchToSave, ...prevSearches]
+          const limitedSearches = updatedSearches.slice(0, MAX_SAVED_SEARCHES)
+          
+          // Guardar en localStorage
+          localStorage.setItem(SAVED_RELATED_SEARCHES_KEY, JSON.stringify(limitedSearches))
+          
+          return limitedSearches
+        })
 
-        // Limitar el número de búsquedas guardadas
-        const limitedSearches = updatedSearches.slice(0, MAX_SAVED_SEARCHES)
-
-        // Guardar en localStorage
-        localStorage.setItem(SAVED_RELATED_SEARCHES_KEY, JSON.stringify(limitedSearches))
-
-        // Actualizar estado
-        setSavedRelatedSearches(limitedSearches)
+        // Actualizar el ref con el identificador actual
+        lastSavedRelatedSearchRef.current = searchIdentifier
         setCurrentRelatedSearchId(searchId)
       } catch (error) {
         console.error("Error al guardar búsqueda relacionada:", error)
@@ -288,103 +353,20 @@ export default function ChannelSearch() {
     }
 
     saveCurrentRelatedSearch()
-  }, [relatedChannels, channelUrl, originalChannel, savedRelatedSearches])
+  }, [relatedChannels, channelUrl, originalChannel])
 
   // Modificar el efecto para filtrar canales relacionados por suscriptores
-  // El problema está en que estamos ordenando los canales en cada renderizado, lo que puede causar un bucle infinito
-  // Vamos a modificar este useEffect para evitar el problema
-
-  // Reemplazar este useEffect:
-  // useEffect(() => {
-  //   const filtered = relatedChannels.filter((channel) => channel.subscriberCount >= minRelatedSubscribers)
-
-  //   // Ordenar por número de suscriptores por defecto
-  //   const sorted = [...filtered].sort((a, b) => b.subscriberCount - a.subscriberCount)
-
-  //   setDisplayedRelatedChannels(sorted)
-  // }, [relatedChannels, minRelatedSubscribers])
-
-  // Por esta versión mejorada:
   useEffect(() => {
     // Solo filtrar y ordenar si hay canales relacionados
     if (relatedChannels.length > 0) {
       const filtered = relatedChannels.filter((channel) => channel.subscriberCount >= minRelatedSubscribers)
-
-      // Ordenar por número de suscriptores por defecto (solo si hay canales filtrados)
-      if (filtered.length > 0) {
-        const sorted = [...filtered].sort((a, b) => b.subscriberCount - a.subscriberCount)
-        setDisplayedRelatedChannels(sorted)
-      } else {
-        setDisplayedRelatedChannels([])
-      }
+      setDisplayedRelatedChannels(filtered)
     } else {
       setDisplayedRelatedChannels([])
     }
   }, [relatedChannels, minRelatedSubscribers])
 
   // También modificar el efecto para aplicar filtros y ordenamiento a los canales normales
-  // Reemplazar este useEffect:
-  // useEffect(() => {
-  //   // Primero filtramos por suscriptores
-  //   let filtered = channels.filter((channel) => channel.subscriberCount >= minSubscribers)
-
-  //   // Filtrar canales inactivos si está activado
-  //   if (filterInactiveChannels) {
-  //     const cutoffDate = new Date()
-  //     cutoffDate.setMonth(cutoffDate.getMonth() - maxInactivityMonths)
-
-  //     filtered = filtered.filter((channel) => {
-  //       if (!channel.lastVideoDate) return false // Si no hay fecha, considerarlo inactivo
-  //       const lastVideoDate = new Date(channel.lastVideoDate)
-  //       return lastVideoDate >= cutoffDate
-  //     })
-  //   }
-
-  //   // Filtrar canales visitados si está activado
-  //   if (hideVisitedChannels) {
-  //     filtered = filtered.filter((channel) => !visitedChannels.has(channel.id))
-  //   }
-
-  //   // Luego aplicamos el ordenamiento local si está definido
-  //   if (sortField) {
-  //     filtered = [...filtered].sort((a, b) => {
-  //       if (sortField === "lastVideoDate") {
-  //         // Manejar ordenamiento por fecha
-  //         const dateA = a.lastVideoDate ? new Date(a.lastVideoDate).getTime() : 0
-  //         const dateB = b.lastVideoDate ? new Date(b.lastVideoDate).getTime() : 0
-
-  //         if (sortDirection === "asc") {
-  //           return dateA - dateB
-  //         } else {
-  //           return dateB - dateA
-  //         }
-  //       } else {
-  //         // Ordenamiento numérico para otros campos
-  //         const valueA = a[sortField] || 0
-  //         const valueB = b[sortField] || 0
-
-  //         if (sortDirection === "asc") {
-  //           return valueA - valueB
-  //         } else {
-  //           return valueB - valueA
-  //         }
-  //       }
-  //     })
-  //   }
-
-  //   setDisplayedChannels(filtered)
-  // }, [
-  //   channels,
-  //   minSubscribers,
-  //   sortField,
-  //   sortDirection,
-  //   filterInactiveChannels,
-  //   maxInactivityMonths,
-  //   visitedChannels,
-  //   hideVisitedChannels,
-  // ])
-
-  // Por esta versión mejorada:
   useEffect(() => {
     // Solo proceder si hay canales
     if (channels.length > 0) {
@@ -703,66 +685,6 @@ export default function ChannelSearch() {
   }
 
   // Modificar la función para generar keywords con IA para evitar posibles actualizaciones de estado innecesarias
-  // Reemplazar esta función:
-  // const generateKeywords = async (source: "search" | "related") => {
-  //   setKeywordSource(source)
-  //   setGeneratingKeywords(true)
-  //   setKeywordError(null)
-  //   setSuggestedKeywords([])
-  //   setShowKeywordGenerator(true)
-
-  //   // Determinar qué canales usar como fuente
-  //   const sourceChannels = source === "search" ? channels : relatedChannels
-
-  //   if (sourceChannels.length === 0) {
-  //     setKeywordError("No hay canales disponibles para generar keywords.")
-  //     setGeneratingKeywords(false)
-  //     return
-  //   }
-
-  //   // Limitar a 10 canales para no sobrecargar la API
-  //   const channelsToAnalyze = sourceChannels.slice(0, 10)
-
-  //   try {
-  //     // Preparar los datos para enviar a la API
-  //     const channelData = channelsToAnalyze.map(channel => ({
-  //       title: channel.title,
-  //       description: channel.description || "",
-  //       subscriberCount: channel.subscriberCount,
-  //     }))
-
-  //     // Enviar los datos a nuestra API
-  //     const response = await fetch("/api/generate-keywords", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         channels: channelData,
-  //         sourceKeyword: source === "search" ? keyword : originalChannel?.title || "",
-  //       }),
-  //     })
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json()
-  //       throw new Error(errorData.error || "Error al generar keywords")
-  //     }
-
-  //     const data = await response.json()
-  //     setSuggestedKeywords(data.keywords)
-  //   } catch (error) {
-  //     console.error("Error al generar keywords:", error)
-  //     setKeywordError(
-  //       error instanceof Error
-  //         ? error.message
-  //         : "Ocurrió un error al comunicarse con la API de Gemini"
-  //     )
-  //   } finally {
-  //     setGeneratingKeywords(false)
-  //   }
-  // }
-
-  // Por esta versión mejorada:
   const generateKeywords = async (source: "search" | "related") => {
     // Verificar si ya estamos generando keywords para evitar múltiples llamadas
     if (generatingKeywords) return
@@ -850,16 +772,6 @@ export default function ChannelSearch() {
   }
 
   // Modificar la función para usar una keyword en la búsqueda
-  // Reemplazar esta función:
-  // const useKeywordForSearch = (keyword: string) => {
-  //   setKeyword(keyword)
-  //   setShowKeywordGenerator(false)
-  //   setActiveTab("search")
-  //   // Desplazar la página hacia arriba para que el usuario vea el campo de búsqueda
-  //   window.scrollTo({ top: 0, behavior: "smooth" })
-  // }
-
-  // Por esta versión mejorada:
   const useKeywordForSearch = (keywordText: string) => {
     // Cerrar primero el diálogo para evitar actualizaciones de estado mientras está abierto
     setShowKeywordGenerator(false)
