@@ -11,14 +11,57 @@ Esta aplicación te permite descubrir y suscribirte a canales de YouTube especia
 - Organizar tus suscripciones por temas
 - Descubrir nuevos creadores de contenido en tu área de interés
 
+## 📸 Capturas de Pantalla
+
+### Búsqueda por Palabra Clave
+![Búsqueda por palabra clave](public/images/search-by-keyword.png)
+*Interfaz principal para buscar canales por palabra clave*
+
+### Búsqueda de Canales Relacionados
+![Búsqueda de canales relacionados](public/images/related-channels.png)
+*Búsqueda de canales relacionados con un canal específico*
+
+### Generador de Keywords con IA
+![Generador de keywords](public/images/keyword-generator.png)
+*Generador de keywords usando IA basado en los canales encontrados*
+
+### Historial de Búsquedas
+![Historial de búsquedas](public/images/search-history.png)
+*Historial de búsquedas guardadas*
+
+### Filtros y Ordenamiento
+![Filtros y ordenamiento](public/images/filters-and-sorting.png)
+*Opciones de filtrado y ordenamiento de resultados*
+
 ## 🚀 Características
 
-- Búsqueda de canales de YouTube
-- Sugerencias de búsqueda inteligentes usando IA
-- Interfaz de usuario moderna y responsiva
-- Componentes UI reutilizables con Radix UI
-- Animaciones suaves
-- Diseño optimizado para móviles
+- Búsqueda de canales por palabra clave
+- Búsqueda de canales relacionados
+- Filtrado por suscriptores
+- Ordenamiento por diferentes criterios
+- Generación de keywords con IA
+- Historial de búsquedas
+- Exportación a CSV
+- Interfaz moderna y responsiva
+
+## 📝 Uso
+
+1. **Búsqueda por Palabra Clave**:
+   - Ingresa una palabra clave en el campo de búsqueda
+   - Ajusta los filtros según necesites
+   - Haz clic en "Buscar"
+
+2. **Búsqueda de Canales Relacionados**:
+   - Pega la URL de un canal de YouTube
+   - Haz clic en "Buscar"
+   - Explora los canales relacionados
+
+3. **Generación de Keywords**:
+   - Después de una búsqueda, haz clic en "Generar Keywords"
+   - Usa las keywords sugeridas para nuevas búsquedas
+
+4. **Exportación de Datos**:
+   - Usa el botón "Descargar CSV" para exportar los resultados
 
 ## 🤖 Funcionalidad de IA
 
@@ -94,11 +137,7 @@ npm run dev
 yarn dev
 ```
 
-5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
-
-## 📸 Capturas de Pantalla
-
-[Agregar capturas de pantalla aquí]
+5. Abrir [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ## 🤝 Contribuir
 
