@@ -164,7 +164,7 @@ export default function ChannelSearch() {
   const [loading, setLoading] = useState(false)
   const [channels, setChannels] = useState<Channel[]>([])
   const { toast } = useToast()
-  const [maxResults, setMaxResults] = useState(50)
+  const [maxResults, setMaxResults] = useState(10)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [totalResults, setTotalResults] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
@@ -250,61 +250,6 @@ export default function ChannelSearch() {
     isFirstLoad.current = false
   }, [])
 
-  // Guardar búsqueda actual en localStorage cuando cambian los canales
-  useEffect(() => {
-    // No guardar si es la primera carga o si no hay canales
-    if (isFirstLoad.current || channels.length === 0 || !keyword) return
-
-    const saveCurrentSearch = () => {
-      try {
-        // Crear un ID único para esta búsqueda
-        const searchId = `search_${Date.now()}`
-
-        // Crear objeto de búsqueda
-        const searchToSave: SavedSearch = {
-          id: searchId,
-          timestamp: Date.now(),
-          params: {
-            keyword,
-            regionCode,
-            order,
-            relevanceLanguage,
-            includeLastVideoDate,
-            maxResults,
-          },
-          channels,
-          totalResults,
-        }
-
-        // Actualizar el estado de búsquedas guardadas
-        const updatedSearches = [searchToSave, ...savedSearches]
-
-        // Limitar el número de búsquedas guardadas
-        const limitedSearches = updatedSearches.slice(0, MAX_SAVED_SEARCHES)
-
-        // Guardar en localStorage
-        localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(limitedSearches))
-
-        // Actualizar estado
-        setSavedSearches(limitedSearches)
-        setCurrentSearchId(searchId)
-      } catch (error) {
-        console.error("Error al guardar búsqueda:", error)
-      }
-    }
-
-    saveCurrentSearch()
-  }, [
-    channels,
-    keyword,
-    regionCode,
-    order,
-    relevanceLanguage,
-    includeLastVideoDate,
-    maxResults,
-    totalResults,
-    savedSearches,
-  ])
 
   // Añadir un nuevo useEffect para guardar búsquedas relacionadas
   useEffect(() => {
