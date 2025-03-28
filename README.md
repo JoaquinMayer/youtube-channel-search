@@ -2,6 +2,15 @@
 
 Una aplicación web moderna para buscar y explorar canales de YouTube. Construida con Next.js, TypeScript y Tailwind CSS.
 
+## 🎯 Propósito
+
+Esta aplicación te permite descubrir y suscribirte a canales de YouTube especializados en temas específicos. Es perfecta para:
+
+- Encontrar canales expertos en cualquier tema o área de interés
+- Mantenerte actualizado con contenido relevante de YouTube
+- Organizar tus suscripciones por temas
+- Descubrir nuevos creadores de contenido en tu área de interés
+
 ## 🚀 Características
 
 - Búsqueda de canales de YouTube
