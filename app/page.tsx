@@ -259,8 +259,8 @@ export default function ChannelSearch() {
     // No guardar si es la primera carga o si no hay canales o keyword
     if (isFirstLoad.current || channels.length === 0 || !keyword) return
 
-    // Crear un identificador único para esta búsqueda
-    const searchIdentifier = `${keyword}_${channels.length}_${Date.now()}`
+    // Crear un identificador único para esta búsqueda basado en el contenido
+    const searchIdentifier = `${keyword}_${regionCode}_${order}_${relevanceLanguage}_${includeLastVideoDate}_${maxResults}_${channels.length}`
 
     // Evitar guardar la misma búsqueda múltiples veces
     if (lastSavedSearchRef.current === searchIdentifier) return
@@ -288,6 +288,21 @@ export default function ChannelSearch() {
 
         // Actualizar el estado de búsquedas guardadas usando el patrón funcional
         setSavedSearches(prevSearches => {
+          // Verificar si ya existe una búsqueda con los mismos parámetros
+          const isDuplicate = prevSearches.some(search => 
+            search.params.keyword === keyword &&
+            search.params.regionCode === regionCode &&
+            search.params.order === order &&
+            search.params.relevanceLanguage === relevanceLanguage &&
+            search.params.includeLastVideoDate === includeLastVideoDate &&
+            search.params.maxResults === maxResults &&
+            search.channels.length === channels.length
+          )
+
+          if (isDuplicate) {
+            return prevSearches
+          }
+
           const updatedSearches = [searchToSave, ...prevSearches]
           const limitedSearches = updatedSearches.slice(0, MAX_SAVED_SEARCHES)
           
@@ -313,8 +328,8 @@ export default function ChannelSearch() {
     // No guardar si es la primera carga o si no hay canales o canal original
     if (isFirstLoad.current || relatedChannels.length === 0 || !originalChannel || !channelUrl) return
 
-    // Crear un identificador único para esta búsqueda
-    const searchIdentifier = `${channelUrl}_${relatedChannels.length}_${Date.now()}`
+    // Crear un identificador único para esta búsqueda basado en el contenido
+    const searchIdentifier = `${channelUrl}_${relatedChannels.length}`
 
     // Evitar guardar la misma búsqueda múltiples veces
     if (lastSavedRelatedSearchRef.current === searchIdentifier) return
@@ -335,6 +350,16 @@ export default function ChannelSearch() {
 
         // Actualizar el estado de búsquedas guardadas usando el patrón funcional
         setSavedRelatedSearches(prevSearches => {
+          // Verificar si ya existe una búsqueda con los mismos parámetros
+          const isDuplicate = prevSearches.some(search => 
+            search.channelUrl === channelUrl &&
+            search.channels.length === relatedChannels.length
+          )
+
+          if (isDuplicate) {
+            return prevSearches
+          }
+
           const updatedSearches = [searchToSave, ...prevSearches]
           const limitedSearches = updatedSearches.slice(0, MAX_SAVED_SEARCHES)
           
