@@ -18,6 +18,7 @@ export async function GET(request: Request) {
   const regionCode = searchParams.get("regionCode") || ""
   const order = searchParams.get("order") || "relevance"
   const relevanceLanguage = searchParams.get("relevanceLanguage") || ""
+  const includeLastVideoDate = searchParams.get("includeLastVideoDate") === "true"
 
   if (!keyword) {
     return NextResponse.json({ error: "Se requiere una palabra clave" }, { status: 400 })
@@ -50,6 +51,25 @@ export async function GET(request: Request) {
 
       if (!searchResponse.ok) {
         const errorData = await searchResponse.json()
+
+        // Detectar específicamente errores de cuota excedida
+        if (
+          searchResponse.status === 403 &&
+          (errorData.error?.errors?.some(
+            (e: any) => e.reason === "quotaExceeded" || e.reason === "dailyLimitExceeded",
+          ) ||
+            errorData.error?.message?.includes("quota") ||
+            errorData.error?.message?.includes("Quota"))
+        ) {
+          return NextResponse.json(
+            {
+              error: "Límite de cuota diaria excedido",
+              quotaExceeded: true,
+            },
+            { status: 429 },
+          )
+        }
+
         throw new Error(`Error en la API de YouTube: ${JSON.stringify(errorData)}`)
       }
 
@@ -107,6 +127,25 @@ export async function GET(request: Request) {
 
       if (!channelsResponse.ok) {
         const errorData = await channelsResponse.json()
+
+        // Detectar específicamente errores de cuota excedida
+        if (
+          channelsResponse.status === 403 &&
+          (errorData.error?.errors?.some(
+            (e: any) => e.reason === "quotaExceeded" || e.reason === "dailyLimitExceeded",
+          ) ||
+            errorData.error?.message?.includes("quota") ||
+            errorData.error?.message?.includes("Quota"))
+        ) {
+          return NextResponse.json(
+            {
+              error: "Límite de cuota diaria excedido",
+              quotaExceeded: true,
+            },
+            { status: 429 },
+          )
+        }
+
         throw new Error(`Error en la API de YouTube: ${JSON.stringify(errorData)}`)
       }
 
@@ -115,7 +154,7 @@ export async function GET(request: Request) {
     }
 
     // Formatear los datos de los canales
-    const channels = allChannelDetails.map((channel: any) => ({
+    let channels = allChannelDetails.map((channel: any) => ({
       id: channel.id,
       title: channel.snippet.title,
       description: channel.snippet.description,
@@ -123,7 +162,73 @@ export async function GET(request: Request) {
       subscriberCount: Number.parseInt(channel.statistics.subscriberCount) || 0,
       videoCount: Number.parseInt(channel.statistics.videoCount) || 0,
       viewCount: Number.parseInt(channel.statistics.viewCount) || 0,
+      lastVideoDate: null, // Inicialmente null, se llenará si se solicita
     }))
+
+    // Si se solicita la fecha del último video, obtenerla para cada canal
+    if (includeLastVideoDate) {
+      // Procesar los canales en lotes para no exceder los límites de la API
+      const channelsWithLastVideoDate = await Promise.all(
+        channels.map(async (channel) => {
+          try {
+            // Buscar el video más reciente del canal
+            const videosUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${
+              channel.id
+            }&order=date&maxResults=1&type=video&key=${YOUTUBE_API_KEY}`
+
+            const videosResponse = await fetch(videosUrl)
+
+            if (!videosResponse.ok) {
+              // Detectar específicamente errores de cuota excedida
+              if (videosResponse.status === 403) {
+                const errorData = await videosResponse.json()
+                if (
+                  errorData.error?.errors?.some(
+                    (e: any) => e.reason === "quotaExceeded" || e.reason === "dailyLimitExceeded",
+                  ) ||
+                  errorData.error?.message?.includes("quota") ||
+                  errorData.error?.message?.includes("Quota")
+                ) {
+                  throw new Error("QUOTA_EXCEEDED")
+                }
+              }
+              return channel // Devolver el canal sin fecha si hay error
+            }
+
+            const videosData = await videosResponse.json()
+
+            // Si hay videos, obtener la fecha del más reciente
+            if (videosData.items && videosData.items.length > 0) {
+              const lastVideoDate = new Date(videosData.items[0].snippet.publishedAt)
+              return {
+                ...channel,
+                lastVideoDate: lastVideoDate.toISOString(),
+                lastVideoId: videosData.items[0].id.videoId,
+                lastVideoTitle: videosData.items[0].snippet.title,
+              }
+            }
+
+            return channel // Devolver el canal sin fecha si no hay videos
+          } catch (error) {
+            // Si el error es por cuota excedida, propagar el error
+            if (error instanceof Error && error.message === "QUOTA_EXCEEDED") {
+              throw error
+            }
+
+            console.error(`Error al obtener videos para el canal ${channel.id}:`, error)
+            return channel // Devolver el canal sin fecha en caso de error
+          }
+        }),
+      ).catch((error) => {
+        // Si el error es por cuota excedida, devolver respuesta de error
+        if (error instanceof Error && error.message === "QUOTA_EXCEEDED") {
+          throw new Error("QUOTA_EXCEEDED")
+        }
+        throw error
+      })
+
+      channels = channelsWithLastVideoDate
+    }
 
     return NextResponse.json({
       channels,
@@ -132,6 +237,18 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error("Error al buscar canales:", error)
+
+    // Verificar si el error es por cuota excedida
+    if (error instanceof Error && error.message === "QUOTA_EXCEEDED") {
+      return NextResponse.json(
+        {
+          error: "Límite de cuota diaria excedido",
+          quotaExceeded: true,
+        },
+        { status: 429 },
+      )
+    }
+
     return NextResponse.json({ error: "Error al buscar canales de YouTube" }, { status: 500 })
   }
 }
