@@ -14,10 +14,20 @@ Esta aplicación te permite descubrir y suscribirte a canales de YouTube especia
 ## 🚀 Características
 
 - Búsqueda de canales de YouTube
+- Sugerencias de búsqueda inteligentes usando IA
 - Interfaz de usuario moderna y responsiva
 - Componentes UI reutilizables con Radix UI
 - Animaciones suaves
 - Diseño optimizado para móviles
+
+## 🤖 Funcionalidad de IA
+
+La aplicación utiliza Google Gemini para mejorar la experiencia de búsqueda:
+
+- Analiza tu término de búsqueda y los canales encontrados
+- Genera sugerencias de búsqueda relacionadas
+- Ayuda a filtrar y encontrar canales más específicos
+- Mejora la precisión de los resultados
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -27,12 +37,14 @@ Esta aplicación te permite descubrir y suscribirte a canales de YouTube especia
 - [Radix UI](https://www.radix-ui.com/) - Componentes UI accesibles
 - [React Hook Form](https://react-hook-form.com/) - Manejo de formularios
 - [Zod](https://zod.dev/) - Validación de esquemas
+- [Google Gemini](https://ai.google.dev/) - IA para sugerencias de búsqueda
 
 ## 📋 Prerrequisitos
 
 - Node.js 18.x o superior
 - npm o yarn
 - API Key de YouTube Data API v3
+- API Key de Google Gemini
 
 ## 🔧 Instalación
 
@@ -58,9 +70,16 @@ yarn install
    - Ve a "Credenciales" y crea una nueva API Key
    - Restringe la API Key para mayor seguridad (opcional pero recomendado)
 
-   b. Crea un archivo `.env` en la raíz del proyecto:
+   b. Obtén una API Key de Gemini:
+   - Ve a [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Crea una nueva API Key
+   - Habilita la API de Gemini en tu proyecto de Google Cloud
+   - La API Key es gratuita para uso básico
+
+   c. Crea un archivo `.env` en la raíz del proyecto:
    ```env
    YOUTUBE_API_KEY=tu_api_key_aqui
+   GEMINI_API_KEY=tu_api_key_aqui
    ```
 
    > ⚠️ **Nota**: La API Key de YouTube tiene cuotas de uso diarias. Para desarrollo, la cuota gratuita debería ser suficiente.
@@ -98,4 +117,5 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Radix UI](https://www.radix-ui.com/)
-- [YouTube Data API v3](https://developers.google.com/youtube/v3/docs/search/list?hl=es-419) - Documentación oficial de la API 
+- [YouTube Data API v3](https://developers.google.com/youtube/v3/docs/search/list?hl=es-419) - Documentación oficial de la API
+- [Google Gemini](https://ai.google.dev/) - IA para sugerencias de búsqueda 
