@@ -157,4 +157,114 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Radix UI](https://www.radix-ui.com/)
 - [YouTube Data API v3](https://developers.google.com/youtube/v3/docs/search/list?hl=es-419) - Documentación oficial de la API
-- [Google Gemini](https://ai.google.dev/) - IA para sugerencias de búsqueda 
+- [Google Gemini](https://ai.google.dev/) - IA para sugerencias de búsqueda
+
+## 🧪 Testing
+
+Para ejecutar los tests:
+
+```bash
+npm run test
+# o
+yarn test
+```
+
+### Tipos de Tests
+
+- **Unit Tests**: Tests unitarios para componentes y funciones
+- **Integration Tests**: Tests de integración para flujos completos
+- **E2E Tests**: Tests end-to-end con Cypress
+
+## 🔌 API Reference
+
+### YouTube Data API
+
+#### Búsqueda de Canales
+
+```typescript
+GET /api/search/channels
+```
+
+| Parámetro | Tipo     | Descripción                |
+| :-------- | :------- | :------------------------- |
+| `query`   | `string` | Término de búsqueda        |
+| `maxResults` | `number` | Número máximo de resultados |
+| `pageToken` | `string` | Token para paginación      |
+
+#### Canales Relacionados
+
+```typescript
+GET /api/channels/related
+```
+
+| Parámetro | Tipo     | Descripción             |
+| :-------- | :------- | :---------------------- |
+| `channelId` | `string` | ID del canal de YouTube |
+
+### Gemini AI API
+
+```typescript
+POST /api/ai/generate-keywords
+```
+
+| Parámetro | Tipo     | Descripción                    |
+| :-------- | :------- | :----------------------------- |
+| `query`   | `string` | Término de búsqueda original   |
+| `results` | `array`  | Resultados de búsqueda previos |
+
+## 💻 Guías de Desarrollo
+
+### Estructura del Proyecto
+
+```
+youtube-channel-search/
+├── app/                    # Rutas y páginas de Next.js
+├── components/             # Componentes React reutilizables
+├── hooks/                  # Custom hooks
+├── lib/                    # Utilidades y configuraciones
+├── public/                 # Archivos estáticos
+├── styles/                 # Estilos globales y configuración de Tailwind
+└── tests/                  # Tests unitarios y de integración
+```
+
+### Convenciones de Código
+
+- Usar TypeScript para todo el código
+- Seguir el estilo de código de Prettier
+- Documentar componentes y funciones con JSDoc
+- Usar nombres descriptivos en inglés
+- Mantener los componentes pequeños y reutilizables
+
+### Git Workflow
+
+1. Crear una rama desde `main` para cada feature/fix
+2. Seguir la convención de commits:
+   - `feat:` para nuevas características
+   - `fix:` para correcciones de bugs
+   - `docs:` para cambios en documentación
+   - `refactor:` para refactorizaciones
+   - `test:` para añadir o modificar tests
+3. Crear Pull Requests con descripción detallada
+4. Requerir al menos una revisión antes de merge
+
+### Performance
+
+- Usar Image Optimization de Next.js
+- Implementar lazy loading para componentes pesados
+- Minimizar el uso de JavaScript del lado del cliente
+- Optimizar las llamadas a la API de YouTube
+
+## 🔄 CI/CD
+
+El proyecto utiliza GitHub Actions para:
+
+- Ejecutar tests automáticamente
+- Verificar el estilo de código
+- Construir y desplegar la aplicación
+- Generar reportes de cobertura
+
+## 📊 Monitoreo
+
+- Uso de Vercel Analytics para métricas de rendimiento
+- Monitoreo de cuota de API de YouTube
+- Logging de errores con Sentry 
